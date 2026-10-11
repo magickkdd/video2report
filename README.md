@@ -6,7 +6,7 @@
 
 ## 它解决什么问题
 
-长视频学习的痛点：完整看一遍太慢，跳过又怕漏掉关键内容。本工具把视频里的**字幕 / 语音 / 画面**抽出来，压缩成一份结构化报告，配关键图表与术语表。
+长视频学习的痛点：完整看一遍太慢，跳过又怕漏掉关键内容。本工具把视频里的**字幕 / 语音 / 画面**抽出来，压缩成一份结构化报告，配原理图、图表与术语表。
 
 ## 核心能力
 
@@ -19,10 +19,11 @@
   - 用 `vad_filter` 判定为 0 段语音后，自动切换到**纯视觉路线**（加密抽帧读画面字幕）
 - **单页交互式 HTML 报告**
   - 速览卡（一句话结论 + 3 条 takeaway）
-  - 章节要点（4–8 章，每章 3–5 个极简要点）
-  - ECharts 图表（流程图 / 概念关系图 / 时间线 / 柱状趋势）
-  - 术语表 + 关键帧插图
-- **图表按视频类型自适应**：教程实操 → 步骤流程；知识科普 → 概念关系图；会议录屏 → 决策时间线；含数据 → 柱状/趋势
+  - 章节要点（4–8 章，每章 3–5 个极简要点，**大白话优先**：一条只说一件事、不堆术语，解释交给术语表）
+  - **自绘 SVG 原理图 / 架构图**（矢量、内联、离线可用）——默认配图方式；视频截图仅在画面不可替代时保留（0–2 张，必须配 `frame_note`）
+  - ECharts 图表（时间线 / 概念关系图 / 柱状趋势）
+  - 术语表 + **正文术语自动悬停释义**（由 glossary 的 `def`/`alias` 驱动，鼠标放上去即显短释义）
+- **图表按视频类型自适应**：教程实操 → 步骤流程；知识科普 → 概念关系图；会议录屏 → 决策时间线；含数据 → 柱状/趋势。结构 / 机制类内容优先用 SVG 原理图表达，不硬塞 ECharts
 
 ## 快速开始
 
@@ -43,12 +44,14 @@ python scripts/transcribe.py --url "..." --out output/BVxxxx --backend whisper -
 python scripts/extract_frames.py --url "..." --out output/BVxxxx --frames-max 20
 
 # 5) 合成（这一步由 AI agent 完成）
-#    读取 meta.json + transcript + frames，产出 report.json，格式见 examples/sample_report.json
+#    读取 meta.json + transcript + frames，产出 report.json，格式见 SKILL.md §6；
+#    章节原理图手写为 SVG 放进 output/BVxxxx/diagrams/，在 report.json 里引用
 
 # 6) 渲染（--out 给目录即可，文件名自动生成为「标题（BV号）.html」）
 python scripts/render_report.py \
   --report output/BVxxxx/report.json \
   --frames-dir output/BVxxxx/frames \
+  --diagrams-dir output/BVxxxx/diagrams \
   --template assets/report_template.html \
   --echarts assets/echarts.min.js \
   --out output/BVxxxx
@@ -57,29 +60,32 @@ python scripts/render_report.py \
 > 输出形如 `一口气学会 pi-agent 的底层原理和二开实践（BV1JB8o6BEit）.html`，
 > 不会所有报告都叫 `report.html`。想自定义文件名，`--out` 传完整路径。
 
+> 章节原理图放 `output/BVxxxx/diagrams/*.svg`，在 `report.json` 的章节 `diagrams` 字段里引用；
+> 渲染时自动**内联**进 HTML（`--diagrams-dir` 缺省取 report.json 同级的 `diagrams/`），不依赖外部图片。
+
 > `assets/echarts.min.js` 由 `setup_env.py` 下载，已加入 `.gitignore`。
 
 ## 目录结构
 
 ```
 video2report/
-├─ SKILL.md                  # 给 AI agent 的编排说明（含环境闸门、工作流、坑位清单）
+├─ SKILL.md                  # 给 AI agent 的编排说明（含环境闸门、工作流、配图规范、坑位清单）
 ├─ README.md
 ├─ scripts/
 │  ├─ setup_env.py           # 一键装依赖 + 拉 echarts
 │  ├─ parse_bilibili.py      # 元数据 + 字幕（yt-dlp，json3）
 │  ├─ transcribe.py          # ASR 兜底（whisper / 自建 API）
 │  ├─ extract_frames.py      # ffmpeg 抽关键帧
-│  └─ render_report.py       # report.json → 单页 HTML
+│  └─ render_report.py       # report.json + diagrams/*.svg → 单页 HTML（术语自动悬停标注）
 ├─ assets/
 │  └─ report_template.html   # 固定中文极简模板（CSS 一次写好，保证输出一致性）
 ├─ references/
 │  └─ proxy_pip.md           # pip 走代理的排错
 └─ examples/
-   └─ sample_report.json     # report.json schema 示例
+   └─ sample_report.json     # report.json schema 示例（最新字段规范以 SKILL.md §6 为准）
 ```
 
-## 实测踩过的坑（都已处理，详见 SKILL.md §6）
+## 实测踩过的坑（都已处理，详见 SKILL.md §7）
 
 | 坑 | 处置 |
 |---|---|
@@ -89,9 +95,11 @@ video2report/
 | HuggingFace 模型下载失败（代理 10061） | 用已缓存模型 + `HF_HUB_OFFLINE=1`；长音频优先 base 控耗时 |
 | 无旁白视频 ASR 输出幻觉歌词 | `vad_filter=True` 复跑，`asr_lines==0` 即确认无语音 → 转视觉路线 |
 | 渲染时帧图片路径错误 | 输出为 `frames/<文件名>`，与 `frames/` 目录同级 |
+| 多张 SVG 内联同一页时 `<marker>` id 全局冲突 | 每张图的箭头 marker id 必须各不相同（如 ah / ahb / aho…） |
+| SVG 配图"简陋"（只有节点名的大留白构图） | 每张图带足信息量：框里写清"是干什么的"；图内文字同样说人话 |
 | pip 装包被镜像/代理坑 | 清代理变量 + `-i https://pypi.org/simple` 直连；需要代理时用 `--proxy` |
 
 ## 说明
 
-- 本仓库最初作为 **WorkBuddy skill** 开发，`SKILL.md` 是给 AI agent 的编排说明（环境闸门 / 分阶段工作流 / 反模式）。即使不使用 agent，也可以按上面命令行手动跑通全链路。
+- 本仓库最初作为 **WorkBuddy skill** 开发，`SKILL.md` 是给 AI agent 的编排说明（环境闸门 / 分阶段工作流 / 配图与文风规范 / 反模式）。即使不使用 agent，也可以按上面命令行手动跑通全链路。
 - 音频/视频/帧等中间产物体积较大，已通过 `.gitignore` 排除，不会进仓库。
