@@ -45,14 +45,17 @@ python scripts/extract_frames.py --url "..." --out output/BVxxxx --frames-max 20
 # 5) 合成（这一步由 AI agent 完成）
 #    读取 meta.json + transcript + frames，产出 report.json，格式见 examples/sample_report.json
 
-# 6) 渲染
+# 6) 渲染（--out 给目录即可，文件名自动生成为「标题（BV号）.html」）
 python scripts/render_report.py \
   --report output/BVxxxx/report.json \
   --frames-dir output/BVxxxx/frames \
   --template assets/report_template.html \
   --echarts assets/echarts.min.js \
-  --out output/BVxxxx/report.html
+  --out output/BVxxxx
 ```
+
+> 输出形如 `一口气学会 pi-agent 的底层原理和二开实践（BV1JB8o6BEit）.html`，
+> 不会所有报告都叫 `report.html`。想自定义文件名，`--out` 传完整路径。
 
 > `assets/echarts.min.js` 由 `setup_env.py` 下载，已加入 `.gitignore`。
 

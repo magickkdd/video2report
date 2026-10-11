@@ -65,9 +65,13 @@ python scripts/extract_frames.py --url <链接> --out <workdir> --proxy ... --fr
 
 **Stage 4 · 渲染**
 ```
-python scripts/render_report.py --report <workdir>/report.json --frames-dir <workdir>/frames --template assets/report_template.html --echarts assets/echarts.min.js --out <workdir>/report.html
+python scripts/render_report.py --report <workdir>/report.json --frames-dir <workdir>/frames --template assets/report_template.html --echarts assets/echarts.min.js --out <workdir>
 ```
 产出单页 HTML，并把 `echarts.min.js` 复制过去。
+
+> **命名规则**：`--out` 给**目录**或缺省时，自动命名为 `「标题（BV号）.html」`
+> （如 `一口气学会 pi-agent 的底层原理和二开实践（BV1JB8o6BEit）.html`），
+> 避免所有报告都叫 `report.html` 而分不清。需要自定义文件名时，`--out` 传完整路径即可。
 
 **Stage 5 · 交付**：`present_files` 预览 `<workdir>/report.html`。
 

@@ -9,7 +9,27 @@ Stage 4 · 渲染：把 agent 合成的 report.json 套进固定模板，生成�
 import argparse
 import json
 import os
+import re
 import shutil
+
+
+ILLEGAL_CHARS = re.compile(r'[\\/:*?"<>|\r\n\t]+')
+
+
+def safe_filename(text, maxlen=40):
+    """去掉 Windows 非法文件名字符并限长。"""
+    t = ILLEGAL_CHARS.sub("", (text or "").strip())
+    t = re.sub(r"\s+", " ", t)
+    return t[:maxlen].rstrip(". ")
+
+
+def auto_filename(meta):
+    """按「标题（BV号）.html」生成可读文件名，避免所有报告都叫 report.html。"""
+    title = safe_filename(meta.get("title", ""))
+    bvid = safe_filename(meta.get("bvid", ""))
+    if title and bvid:
+        return f"{title}（{bvid}）.html"
+    return (title or bvid or "report") + ".html"
 
 
 INIT_JS = r"""
@@ -80,7 +100,8 @@ def main():
     ap.add_argument("--frames-dir", default="")
     ap.add_argument("--template", required=True)
     ap.add_argument("--echarts", required=True)
-    ap.add_argument("--out", required=True)
+    ap.add_argument("--out", default="",
+                    help="输出 html 路径，或目录；留空/给目录时自动命名为「标题（BV号）.html」")
     args = ap.parse_args()
 
     with open(args.report, "r", encoding="utf-8") as f:
@@ -98,16 +119,23 @@ def main():
     data_js = json.dumps(report, ensure_ascii=False)
     html = tpl.replace("/*__DATA__*/", data_js).replace("/*__INIT__*/", INIT_JS)
 
-    out_dir = os.path.dirname(os.path.abspath(args.out))
+    # 输出路径：--out 为目录或缺省时，自动按「标题（BV号）.html」命名
+    if not args.out or os.path.isdir(args.out):
+        base_dir = args.out if args.out else "."
+        out_path = os.path.join(base_dir, auto_filename(report.get("meta", {})))
+    else:
+        out_path = args.out
+
+    out_dir = os.path.dirname(os.path.abspath(out_path))
     os.makedirs(out_dir, exist_ok=True)
-    with open(args.out, "w", encoding="utf-8") as f:
+    with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
 
     # 复制 echarts 到输出目录旁
     if os.path.exists(args.echarts):
         shutil.copy(args.echarts, os.path.join(out_dir, "echarts.min.js"))
 
-    print(json.dumps({"out": args.out, "charts": len(report.get("charts", [])),
+    print(json.dumps({"out": out_path, "charts": len(report.get("charts", [])),
                       "chapters": len(report.get("chapters", []))}, ensure_ascii=False))
 
 
