@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "bvid": "BV1xx411c7XD",
+    "title": "示例：用 ffmpeg 把长视频压成适合分享的短片",
+    "up": "演示UP主",
+    "duration_sec": 725,
+    "type": "教程/实操"
+  },
+  "overview": {
+    "summary": "一条命令即可完成「抽帧→剪辑→压缩」，核心是用 -ss 定位、-crf 控质量、-preset 控速度。",
+    "takeaways": [
+      "先用 ffprobe 看参数，再决定编码；不要盲压",
+      "裁剪用 -ss 前置（更快），-t 控时长",
+      "体积与画质用 -crf 18~28 权衡，值越大越小"
+    ]
+  },
+  "chapters": [
+    {"title": "1. 环境与参数确认", "start": 0, "end": 150, "points": [
+      "安装 ffmpeg 并确认 ffprobe 可用",
+      "用 ffprobe 读取分辨率、码率、编码格式",
+      "确认目标平台对封装/编码的要求"
+    ]},
+    {"title": "2. 快速裁剪与抽帧", "start": 150, "end": 420, "points": [
+      "ffmpeg -ss 00:02:30 -i in.mp4 -t 30 -c copy out.mp4",
+      "关键帧抽取：ffmpeg -i in.mp4 -vf fps=1/60 frame_%03d.jpg",
+      "-ss 放在 -i 前是解码前定位，速度远快于放在后"
+    ]},
+    {"title": "3. 压缩与质量权衡", "start": 420, "end": 725, "points": [
+      "-crf 控制质量：18 近无损，23 默认，28 明显变小",
+      "-preset 越慢压缩率越高：veryslow > medium > veryfast",
+      "二压验证：对比原片与成片的客观指标（码率/尺寸）"
+    ]}
+  ],
+  "charts": [
+    {"title": "标准处理流程", "type": "flow", "option": {
+      "series": [{
+        "type": "graph", "layout": "none", "roam": false, "symbolSize": 1,
+        "label": {"show": true, "position": "right", "fontSize": 13},
+        "lineStyle": {"color": "#2f6bff", "curveness": 0.05},
+        "data": [
+          {"name": "① 确认参数", "x": 0, "y": 200},
+          {"name": "② 裁剪定位(-ss)", "x": 220, "y": 200},
+          {"name": "③ 抽帧检查", "x": 440, "y": 200},
+          {"name": "④ -crf 压缩", "x": 660, "y": 200},
+          {"name": "⑤ 二压验证", "x": 880, "y": 200}
+        ],
+        "links": [
+          {"source": "① 确认参数", "target": "② 裁剪定位(-ss)"},
+          {"source": "② 裁剪定位(-ss)", "target": "③ 抽帧检查"},
+          {"source": "③ 抽帧检查", "target": "④ -crf 压缩"},
+          {"source": "④ -crf 压缩", "target": "⑤ 二压验证"}
+        ]
+      }]
+    }},
+    {"title": "不同 -crf 下的体积对比（示意）", "type": "bar", "option": {
+      "tooltip": {"trigger": "axis"},
+      "xAxis": {"type": "category", "data": ["crf18", "crf23", "crf28", "crf33"]},
+      "yAxis": {"type": "value", "name": "相对体积"},
+      "series": [{"type": "bar", "data": [100, 62, 38, 22], "itemStyle": {"color": "#2f6bff"}}]
+    }}
+  ],
+  "glossary": [
+    {"term": "CRF", "explain": "恒定速率因子，值越大文件越小、画质越低，范围 0–51。"},
+    {"term": "-ss / -t", "explain": "-ss 定位起点，-t 限制时长；放 -i 前更快。"},
+    {"term": "preset", "explain": "编码速度档，越慢压缩率越高、耗时越长。"}
+  ]
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>视频速读报告</title>
+<script src="echarts.min.js"></script>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1f2329; --sub:#646a73;
+    --line:#e5e6eb; --accent:#2f6bff; --accent-soft:#eaf1ff;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.7; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:32px 20px 64px;}
+  #overview{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:24px 26px; box-shadow:0 2px 12px rgba(0,0,0,.04); margin-bottom:24px;
+  }
+  #overview h1{margin:0 0 6px; font-size:24px; line-height:1.35;}
+  .meta{color:var(--sub); font-size:13px; margin-bottom:14px;}
+  .summary{font-size:16px; font-weight:600; margin-bottom:12px;}
+  .note{margin:10px 0 4px; padding:10px 12px; background:var(--accent-soft); border-radius:8px;
+        font-size:12px; color:#4a5568; line-height:1.65;}
+  .takeaways{margin:0; padding-left:20px;}
+  .takeaways li{margin:4px 0;}
+  .chapter{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 22px; margin-bottom:16px;
+  }
+  .chapter h2{margin:0 0 10px; font-size:18px; display:flex; align-items:baseline; gap:10px;}
+  .chapter h2 .time{font-size:12px; color:var(--sub); font-weight:400;}
+  .chapter ul{margin:0; padding-left:20px;}
+  .chapter li{margin:5px 0;}
+  .frame{display:block; max-width:100%; margin-top:12px; border-radius:10px; border:1px solid var(--line);}
+  #charts .chart-block{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px; margin-bottom:16px;
+  }
+  #charts h3{margin:0 0 8px; font-size:15px;}
+  .chart{width:100%; height:360px;}
+  #glossary{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px 22px;}
+  #glossary h2{font-size:16px; margin:0 0 10px;}
+  .term{margin:6px 0; font-size:14px;}
+  .term b{color:var(--accent);}
+  .muted{color:var(--sub); font-size:13px;}
+  h2.section-title{font-size:15px; color:var(--sub); margin:28px 4px 12px; letter-spacing:.05em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="overview"></div>
+  <h2 class="section-title">内容要点</h2>
+  <div id="chapters"></div>
+  <h2 class="section-title">可视化图表</h2>
+  <div id="charts"></div>
+  <div id="glossary"></div>
+</div>
+<script>
+window.__REPORT__ = /*__DATA__*/;
+/*__INIT__*/
+</script>
+</body>
+</html>
