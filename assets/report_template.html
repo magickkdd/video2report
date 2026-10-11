@@ -37,7 +37,24 @@
   .chapter h2 .time{font-size:12px; color:var(--sub); font-weight:400;}
   .chapter ul{margin:0; padding-left:20px;}
   .chapter li{margin:5px 0;}
-  .frame{display:block; max-width:100%; margin-top:12px; border-radius:10px; border:1px solid var(--line);}
+  /* 要点保持白话；出现的术语加虚线，鼠标悬停看释义 */
+  .gl{color:inherit; text-decoration:none; border-bottom:1px dashed #9dbaff; cursor:help;}
+  .gl:hover{background:var(--accent-soft);}
+  .frame{display:block; max-width:100%; border-radius:10px; border:1px solid var(--line);}
+  .figure{margin:14px 0 2px; padding:0;}
+  .figure-box{
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; overflow:hidden;
+  }
+  .figure-box svg{display:block; width:100%; height:auto;}
+  .figure figcaption{
+    margin-top:6px; font-size:12px; color:var(--sub); line-height:1.6;
+    padding-left:2px;
+  }
+  .figure figcaption::before{
+    content:"图"; display:inline-block; margin-right:6px; padding:0 5px;
+    font-size:11px; color:var(--accent); background:var(--accent-soft); border-radius:4px;
+  }
   #charts .chart-block{
     background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
     padding:16px 18px; margin-bottom:16px;
